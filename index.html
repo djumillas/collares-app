@@ -2,8 +2,6 @@
 <html>
 <head>
 <meta charset="UTF-8">
-
-<!-- 🔥 ESTO ES LA CLAVE -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Collares App</title>
@@ -13,25 +11,31 @@ body {
   font-family: Arial;
   padding: 10px;
   margin: 0;
+  background:#f5f5f5;
 }
 
-/* grid responsive */
+h2 {
+  text-align:center;
+}
+
+/* GRID */
 #app {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 10px;
 }
 
-/* tarjetas */
+/* CARD */
 .card {
-  border:1px solid #ccc;
+  border:1px solid #ddd;
   padding:8px;
-  border-radius:10px;
+  border-radius:12px;
   background:#fff;
   text-align:center;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* imagen */
+/* IMG */
 img {
   width:100%;
   height:120px;
@@ -39,15 +43,19 @@ img {
   border-radius:8px;
 }
 
-/* texto más pequeño */
 h3 { font-size:14px; margin:5px 0; }
 p { font-size:12px; margin:2px 0; }
 
+/* BUTTON */
 button {
   padding:6px;
   margin-top:5px;
   width:100%;
   font-size:12px;
+  background:#000;
+  color:#fff;
+  border:none;
+  border-radius:6px;
 }
 </style>
 </head>
@@ -58,10 +66,11 @@ button {
 <div id="app">Cargando...</div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyj_yybzYkAw45JXdtZxM6lIcK4cRaUK0Oj2dIxPsj8N_OJtJwAb2sTGdL3liIinxRXbw/exec";
+const API_URL = "PEGA_AQUI_TU_NUEVA_URL";
 
 let data = [];
 
+/* 🔥 convertir links drive automáticamente */
 function convertirDrive(url){
   if(!url) return "";
   const match = url.match(/\/d\/(.*?)\//);
@@ -71,6 +80,7 @@ function convertirDrive(url){
   return url;
 }
 
+/* 🔥 JSONP */
 window.recibirDatos = function(json) {
   data = json;
   render();
@@ -79,12 +89,21 @@ window.recibirDatos = function(json) {
 function cargarDatos() {
   const script = document.createElement("script");
   script.src = API_URL + "?callback=recibirDatos&t=" + new Date().getTime();
+  script.onerror = () => {
+    document.getElementById("app").innerHTML = "Error cargando datos";
+  };
   document.body.appendChild(script);
 }
 
+/* 🔥 RENDER */
 function render() {
   const app = document.getElementById("app");
   app.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    app.innerHTML = "No hay collares";
+    return;
+  }
 
   data.forEach(collar => {
     const stock = parseInt(collar.STOCK);
@@ -105,6 +124,7 @@ function render() {
   });
 }
 
+/* 🔥 VENDER */
 async function vender(ref){
   const collar = data.find(c => c.REFERENCIA == ref);
   let stock = parseInt(collar.STOCK);
@@ -116,17 +136,24 @@ async function vender(ref){
 
   collar.STOCK = stock - 1;
 
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      id: collar.REFERENCIA,
-      stock: collar.STOCK
-    })
-  });
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        id: collar.REFERENCIA,
+        stock: collar.STOCK
+      })
+    });
 
-  render();
+    render();
+
+  } catch (error) {
+    alert("Error de conexión");
+    console.error(error);
+  }
 }
 
+/* INICIO */
 cargarDatos();
 </script>
 
