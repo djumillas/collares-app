@@ -59,7 +59,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbypQyw73gMBt138BimXNYNO
 
 let data = [];
 
-/* convertir imágenes drive */
 function convertirDrive(url){
   if(!url) return "";
   const match = url.match(/\/d\/(.*?)\//);
@@ -69,37 +68,17 @@ function convertirDrive(url){
   return url;
 }
 
-/* recibir datos */
-window.recibirDatos = function(json) {
-  data = json;
-  render();
-};
-
-/* cargar datos */
-function cargarDatos() {
-
-  const old = document.getElementById("jsonpScript");
-  if(old) old.remove();
-
-  const script = document.createElement("script");
-  script.id = "jsonpScript";
-  script.src = API_URL + "?callback=recibirDatos&t=" + Date.now();
-
-  script.onerror = () => {
+/* 🔥 CARGA NORMAL (NO JSONP) */
+async function cargarDatos() {
+  try {
+    const res = await fetch(API_URL);
+    data = await res.json();
+    render();
+  } catch (error) {
     document.getElementById("app").innerHTML = "Error cargando datos";
-  };
-
-  document.body.appendChild(script);
-
-  // fallback (Safari)
-  setTimeout(() => {
-    if (!data || data.length === 0) {
-      document.getElementById("app").innerHTML = "Error cargando datos";
-    }
-  }, 4000);
+  }
 }
 
-/* pintar */
 function render() {
   const app = document.getElementById("app");
   app.innerHTML = "";
@@ -123,7 +102,6 @@ function render() {
   });
 }
 
-/* vender */
 async function vender(ref){
   const collar = data.find(c => c.REFERENCIA == ref);
   let stock = parseInt(collar.STOCK);
@@ -135,23 +113,17 @@ async function vender(ref){
 
   collar.STOCK = stock - 1;
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        id: collar.REFERENCIA,
-        stock: collar.STOCK
-      })
-    });
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      id: collar.REFERENCIA,
+      stock: collar.STOCK
+    })
+  });
 
-    render();
-
-  } catch (error) {
-    alert("Error de conexión");
-  }
+  render();
 }
 
-/* iniciar */
 cargarDatos();
 </script>
 
