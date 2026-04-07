@@ -55,7 +55,12 @@ button {
 <div id="app">Cargando...</div>
 
 <script>
+
+// 🔥 TU URL ORIGINAL
 const API_URL = "https://script.google.com/macros/s/AKfycbypQyw73gMBt138BimXNYNObFglNXqHZMsRRmCfPb15jxdN78hXqEgkALey_ZceOyFSMg/exec";
+
+// 🔥 PROXY (esto arregla el móvil)
+const PROXY = "https://api.allorigins.win/raw?url=";
 
 let data = [];
 
@@ -68,10 +73,9 @@ function convertirDrive(url){
   return url;
 }
 
-/* 🔥 CARGA NORMAL (NO JSONP) */
 async function cargarDatos() {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(PROXY + encodeURIComponent(API_URL));
     data = await res.json();
     render();
   } catch (error) {
@@ -106,7 +110,7 @@ async function vender(ref){
   const collar = data.find(c => c.REFERENCIA == ref);
   let stock = parseInt(collar.STOCK);
 
-  if (isNaN(stock) || stock <= 0) {
+  if (stock <= 0) {
     alert("Sin stock");
     return;
   }
@@ -125,6 +129,7 @@ async function vender(ref){
 }
 
 cargarDatos();
+
 </script>
 
 </body>
