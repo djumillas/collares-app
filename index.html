@@ -4,22 +4,31 @@
   <meta charset="UTF-8">
   <title>Collares App</title>
   <style>
-    body { font-family: Arial; }
-    .card { border:1px solid #ccc; padding:10px; margin:10px; }
-    img { width:100px; }
-    button { padding:10px; margin-top:5px; }
+    body { font-family: Arial; padding: 10px; }
+    .card { border:1px solid #ccc; padding:10px; margin:10px; border-radius:10px; }
+    button { padding:10px; margin-top:5px; width:100%; }
   </style>
 </head>
 <body>
 
 <h1>Mis Collares</h1>
-<div id="app"></div>
+<div id="app">Cargando...</div>
 
 <script>
-const data = [
-  {id:1, nombre:"Collar Luna", stock:5, vendidos:0},
-  {id:2, nombre:"Collar Estrella", stock:3, vendidos:0}
-];
+const API_URL = "https://script.google.com/macros/s/AKfycbxnH4j-kifkU9zxYznxTmEQ8q8rwczTPWgWqmqVE74gZ0Lx-X3bR0084h0gnWJsb0WE6A/exec";
+
+let data = [];
+
+async function cargarDatos() {
+  try {
+    const res = await fetch(API_URL);
+    data = await res.json();
+    render();
+  } catch (error) {
+    document.getElementById("app").innerHTML = "Error cargando datos";
+    console.error(error);
+  }
+}
 
 function render() {
   const app = document.getElementById("app");
@@ -32,7 +41,7 @@ function render() {
     div.innerHTML = `
       <h3>${collar.nombre}</h3>
       <p>Stock: ${collar.stock}</p>
-      <p>Vendidos hoy: ${collar.vendidos}</p>
+      <p>Vendidos: ${collar.vendidos}</p>
       <button onclick="vender(${collar.id})">Vendido</button>
     `;
 
@@ -40,14 +49,26 @@ function render() {
   });
 }
 
-function vender(id){
-  const collar = data.find(c => c.id === id);
+async function vender(id){
+  const collar = data.find(c => c.id == id);
+
   collar.stock--;
   collar.vendidos++;
-  render();
+
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(collar)
+    });
+
+    render();
+  } catch (error) {
+    alert("Error al guardar");
+    console.error(error);
+  }
 }
 
-render();
+cargarDatos();
 </script>
 
 </body>
