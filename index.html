@@ -9,8 +9,8 @@
 <style>
 body {
   font-family: Arial;
-  padding: 10px;
   margin: 0;
+  padding: 10px;
   background:#f5f5f5;
 }
 
@@ -23,10 +23,9 @@ h2 { text-align:center; }
 }
 
 .card {
-  border:1px solid #ddd;
+  background:white;
+  border-radius:10px;
   padding:8px;
-  border-radius:12px;
-  background:#fff;
   text-align:center;
 }
 
@@ -38,13 +37,9 @@ img {
 }
 
 button {
-  padding:6px;
   margin-top:5px;
   width:100%;
-  background:black;
-  color:white;
-  border:none;
-  border-radius:6px;
+  padding:6px;
 }
 </style>
 </head>
@@ -55,15 +50,11 @@ button {
 <div id="app">Cargando...</div>
 
 <script>
-
-// 🔥 TU URL ORIGINAL
-const API_URL = "https://script.google.com/macros/s/AKfycbypQyw73gMBt138BimXNYNObFglNXqHZMsRRmCfPb15jxdN78hXqEgkALey_ZceOyFSMg/exec";
-
-// 🔥 PROXY (esto arregla el móvil)
-const PROXY = "https://api.allorigins.win/raw?url=";
+const API_URL = "https://script.google.com/macros/s/AKfycbyUCWmKpuqvUIQZkbtMCBECeQz9EkyL0pQK1TzomkpSj-CQ6ze0JwdkWtljW20deOSBLQ/exec";
 
 let data = [];
 
+/* convertir imágenes */
 function convertirDrive(url){
   if(!url) return "";
   const match = url.match(/\/d\/(.*?)\//);
@@ -73,16 +64,25 @@ function convertirDrive(url){
   return url;
 }
 
-async function cargarDatos() {
-  try {
-    const res = await fetch(PROXY + encodeURIComponent(API_URL));
-    data = await res.json();
+/* JSONP correcto */
+function cargarDatos() {
+
+  window.recibirDatos = function(json) {
+    data = json;
     render();
-  } catch (error) {
+  };
+
+  const script = document.createElement("script");
+  script.src = API_URL + "?callback=recibirDatos&" + Date.now();
+
+  script.onerror = () => {
     document.getElementById("app").innerHTML = "Error cargando datos";
-  }
+  };
+
+  document.body.appendChild(script);
 }
 
+/* pintar */
 function render() {
   const app = document.getElementById("app");
   app.innerHTML = "";
@@ -106,7 +106,8 @@ function render() {
   });
 }
 
-async function vender(ref){
+/* vender */
+function vender(ref){
   const collar = data.find(c => c.REFERENCIA == ref);
   let stock = parseInt(collar.STOCK);
 
@@ -117,7 +118,7 @@ async function vender(ref){
 
   collar.STOCK = stock - 1;
 
-  await fetch(API_URL, {
+  fetch(API_URL, {
     method: "POST",
     body: JSON.stringify({
       id: collar.REFERENCIA,
@@ -129,7 +130,6 @@ async function vender(ref){
 }
 
 cargarDatos();
-
 </script>
 
 </body>
