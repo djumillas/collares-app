@@ -19,19 +19,17 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzrRtxT5t2TwOOOOvzfBADq
 
 let data = [];
 
-async function cargarDatos() {
-  try {
-    const res = await fetch(API_URL + "?t=" + new Date().getTime());
-    const text = await res.text();
+// Función que recibirá los datos
+function recibirDatos(json) {
+  data = json;
+  render();
+}
 
-    // Convertimos manualmente a JSON (evita problemas CORS)
-    data = JSON.parse(text);
-
-    render();
-  } catch (error) {
-    document.getElementById("app").innerHTML = "Error cargando datos";
-    console.error(error);
-  }
+// Cargar datos usando script (evita CORS)
+function cargarDatos() {
+  const script = document.createElement("script");
+  script.src = API_URL + "?callback=recibirDatos";
+  document.body.appendChild(script);
 }
 
 function render() {
@@ -85,6 +83,7 @@ async function vender(ref){
   }
 }
 
+// Ejecutar
 cargarDatos();
 </script>
 
