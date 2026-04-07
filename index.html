@@ -20,14 +20,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxnH4j-kifkU9zxYznxTmEQ
 let data = [];
 
 async function cargarDatos() {
-  try {
-    const res = await fetch(API_URL);
-    data = await res.json();
-    render();
-  } catch (error) {
-    document.getElementById("app").innerHTML = "Error cargando datos";
-    console.error(error);
-  }
+  const res = await fetch(API_URL);
+  data = await res.json();
+  render();
 }
 
 function render() {
@@ -39,33 +34,38 @@ function render() {
     div.className = "card";
 
     div.innerHTML = `
-      <h3>${collar.nombre}</h3>
-      <p>Stock: ${collar.stock}</p>
-      <p>Vendidos: ${collar.vendidos}</p>
-      <button onclick="vender(${collar.id})">Vendido</button>
+      <h3>${collar.NOMBRE}</h3>
+      <p>Referencia: ${collar.REFERENCIA}</p>
+      <p>Stock: ${collar.STOCK}</p>
+      <button onclick="vender('${collar.REFERENCIA}')">Vendido</button>
     `;
 
     app.appendChild(div);
   });
 }
 
-async function vender(id){
-  const collar = data.find(c => c.id == id);
+async function vender(ref){
+  const collar = data.find(c => c.REFERENCIA == ref);
 
-  collar.stock--;
-  collar.vendidos++;
+  let stock = parseInt(collar.STOCK);
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(collar)
-    });
-
-    render();
-  } catch (error) {
-    alert("Error al guardar");
-    console.error(error);
+  if (isNaN(stock) || stock <= 0) {
+    alert("Sin stock");
+    return;
   }
+
+  collar.STOCK = stock - 1;
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      id: collar.REFERENCIA,
+      stock: collar.STOCK,
+      vendidos: 1
+    })
+  });
+
+  render();
 }
 
 cargarDatos();
