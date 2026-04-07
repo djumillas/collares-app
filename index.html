@@ -14,7 +14,6 @@ body {
   color: white;
 }
 
-/* HEADER */
 .header {
   text-align: center;
   padding: 15px;
@@ -22,76 +21,47 @@ body {
   font-weight: bold;
 }
 
-/* GRID */
 #app {
   padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
-/* CARD */
 .card {
   background: #1c1c1e;
   border-radius: 16px;
+  margin-bottom: 10px;
   overflow: hidden;
 }
 
-/* IMAGE */
 .card img {
   width: 100%;
   height: 220px;
   object-fit: cover;
 }
 
-/* TEXT */
 .card-content {
   padding: 10px;
 }
 
 .card-content h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: bold;
 }
 
 .card-content p {
-  margin: 3px 0;
+  margin: 2px 0;
   font-size: 13px;
   color: #aaa;
 }
 
-/* BUTTON */
 button {
-  margin-top: 5px;
   width: 100%;
   padding: 8px;
-  border-radius: 8px;
+  margin-top: 6px;
+  border-radius: 10px;
   border: none;
-  background: #6c5ce7;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
   color: white;
-}
-
-/* NAV BAR */
-.nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  height: 60px;
-  background: #1c1c1e;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-top: 1px solid #333;
-}
-
-.nav div {
-  text-align: center;
-  font-size: 12px;
-  color: #aaa;
-}
-
-.nav .active {
-  color: #a29bfe;
 }
 </style>
 </head>
@@ -99,13 +69,7 @@ button {
 <body>
 
 <div class="header">Collares</div>
-
 <div id="app">Cargando...</div>
-
-<div class="nav">
-  <div class="active">+<br>Inventario</div>
-  <div>☰<br>Datos</div>
-</div>
 
 <script type="module">
 
@@ -115,10 +79,7 @@ import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.g
 const firebaseConfig = {
   apiKey: "AIzaSyA5VFJFMHRwK-sWj5Jr2GXo9P4RRd0U8Us",
   authDomain: "collares-2709c.firebaseapp.com",
-  projectId: "collares-2709c",
-  storageBucket: "collares-2709c.firebasestorage.app",
-  messagingSenderId: "568653904079",
-  appId: "1:568653904079:web:cecfbd6020e767b2839fba"
+  projectId: "collares-2709c"
 };
 
 const appFirebase = initializeApp(firebaseConfig);
@@ -163,8 +124,8 @@ function render() {
     div.innerHTML = `
       ${collar.imagen ? `<img src="${collar.imagen}">` : ""}
       <div class="card-content">
-        <h3>${collar.referencia || ""}</h3>
-        <p>${collar.nombre}</p>
+        <h3>${collar.referencia || ""} - ${collar.nombre}</h3>
+        <p>${collar.precio}</p>
         <button onclick="vender('${collar.id}', ${collar.stock})">
           Vendido (${collar.stock})
         </button>
