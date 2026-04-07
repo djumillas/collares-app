@@ -1,75 +1,36 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Collares App</title>
-  <style>
-    body { font-family: Arial; padding: 10px; }
-    .card { border:1px solid #ccc; padding:10px; margin:10px; border-radius:10px; }
-    button { padding:10px; margin-top:5px; width:100%; }
-  </style>
-</head>
-<body>
+function doGet() {
+  const sheet = SpreadsheetApp.openById("13hA8AUqEZvpRfx41umWaSIZCq-WN1VN3z6Cnpq8W9nU");
+  const data = sheet.getSheets()[0].getDataRange().getValues();
 
-<h1>Mis Collares</h1>
-<div id="app">Cargando...</div>
+  const headers = data[0];
+  const rows = data.slice(1);
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxnH4j-kifkU9zxYznxTmEQ8q8rwczTPWgWqmqVE74gZ0Lx-X3bR0084h0gnWJsb0WE6A/exec";
-
-let data = [];
-
-async function cargarDatos() {
-  const res = await fetch(API_URL);
-  data = await res.json();
-  render();
-}
-
-function render() {
-  const app = document.getElementById("app");
-  app.innerHTML = "";
-
-  data.forEach(collar => {
-    const div = document.createElement("div");
-    div.className = "card";
-
-    div.innerHTML = `
-      <h3>${collar.NOMBRE}</h3>
-      <p>Referencia: ${collar.REFERENCIA}</p>
-      <p>Stock: ${collar.STOCK}</p>
-      <button onclick="vender('${collar.REFERENCIA}')">Vendido</button>
-    `;
-
-    app.appendChild(div);
+  const result = rows.map(row => {
+    let obj = {};
+    headers.forEach((h, i) => obj[h] = row[i]);
+    return obj;
   });
+
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
 }
 
-async function vender(ref){
-  const collar = data.find(c => c.REFERENCIA == ref);
+function doPost(e) {
+  const sheet = SpreadsheetApp.openById("13hA8AUqEZvpRfx41umWaSIZCq-WN1VN3z6Cnpq8W9nU");
+  const hoja = sheet.getSheets()[0];
 
-  let stock = parseInt(collar.STOCK);
+  const body = JSON.parse(e.postData.contents);
+  const data = hoja.getDataRange().getValues();
+  const headers = data[0];
 
-  if (isNaN(stock) || stock <= 0) {
-    alert("Sin stock");
-    return;
+  const idIndex = headers.indexOf("REFERENCIA");
+  const stockIndex = headers.indexOf("STOCK");
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][idIndex] == body.id) {
+      hoja.getRange(i+1, stockIndex+1).setValue(body.stock);
+    }
   }
 
-  collar.STOCK = stock - 1;
-
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      id: collar.REFERENCIA,
-      stock: collar.STOCK,
-      vendidos: 1
-    })
-  });
-
-  render();
+  return ContentService.createTextOutput("ok");
 }
-
-cargarDatos();
-</script>
-
-</body>
-</html>
