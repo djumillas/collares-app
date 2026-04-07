@@ -49,33 +49,36 @@ button {
 <h2>Mis Collares</h2>
 <div id="app">Cargando...</div>
 
-<script>
+<script type="module">
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwyecjRP4uxkhN2rP0u6JwtbQKE-5T6TW6ccC-PNOP1z7v58nVbKFNQ9GQN193jGBqALA/exec";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// 🔥 TU CONFIG YA PUESTA
+const firebaseConfig = {
+  apiKey: "AIzaSyA5VFJFMHRwK-sWj5Jr2GXo9P4RRd0U8Us",
+  authDomain: "collares-2709c.firebaseapp.com",
+  projectId: "collares-2709c",
+  storageBucket: "collares-2709c.firebasestorage.app",
+  messagingSenderId: "568653904079",
+  appId: "1:568653904079:web:cecfbd6020e767b2839fba"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+const db = getFirestore(appFirebase);
 
 let data = [];
 
-/* convertir imagen */
-function convertirDrive(url){
-  if(!url) return "";
-  const match = url.match(/\/d\/(.*?)\//);
-  if(match){
-    return "https://drive.google.com/uc?export=view&id=" + match[1];
-  }
-  return url;
-}
-
 /* cargar datos */
 async function cargarDatos() {
-  try {
-    const res = await fetch(API_URL + "?t=" + Date.now());
-    const text = await res.text();
-    data = JSON.parse(text);
-    render();
-  } catch (error) {
-    document.getElementById("app").innerHTML = "Error cargando datos";
-    console.error(error);
-  }
+  const querySnapshot = await getDocs(collection(db, "collares"));
+  data = [];
+
+  querySnapshot.forEach((docu) => {
+    data.push({ id: docu.id, ...docu.data() });
+  });
+
+  render();
 }
 
 /* pintar */
@@ -84,18 +87,16 @@ function render() {
   app.innerHTML = "";
 
   data.forEach(collar => {
-    const stock = parseInt(collar.STOCK);
-    const img = convertirDrive(collar["ENLACE A FOTOGRAFÍA DE PRODUCTO"]);
 
     const div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
-      ${img ? `<img src="${img}">` : ""}
-      <h3>${collar.NOMBRE}</h3>
-      <p>${collar.PRECIO}</p>
-      <p>Stock: ${stock}</p>
-      <button onclick="vender('${collar.REFERENCIA}')">Vendido</button>
+      ${collar.imagen ? `<img src="${collar.imagen}">` : ""}
+      <h3>${collar.nombre}</h3>
+      <p>${collar.precio}</p>
+      <p>Stock: ${collar.stock}</p>
+      <button onclick="vender('${collar.id}', ${collar.stock})">Vendido</button>
     `;
 
     app.appendChild(div);
@@ -103,34 +104,22 @@ function render() {
 }
 
 /* vender */
-async function vender(ref){
-  const collar = data.find(c => c.REFERENCIA == ref);
-  let stock = parseInt(collar.STOCK);
+window.vender = async function(id, stock){
 
-  if (stock <= 0) {
+  if(stock <= 0){
     alert("Sin stock");
     return;
   }
 
-  collar.STOCK = stock - 1;
+  const ref = doc(db, "collares", id);
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        id: collar.REFERENCIA,
-        stock: collar.STOCK
-      })
-    });
+  await updateDoc(ref, {
+    stock: stock - 1
+  });
 
-    render();
-
-  } catch (error) {
-    alert("Error de conexión");
-  }
+  cargarDatos();
 }
 
-/* iniciar */
 cargarDatos();
 
 </script>
