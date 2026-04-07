@@ -21,8 +21,12 @@ let data = [];
 
 async function cargarDatos() {
   try {
-    const res = await fetch(API_URL);
-    data = await res.json();
+    const res = await fetch(API_URL + "?t=" + new Date().getTime());
+    const text = await res.text();
+
+    // Convertimos manualmente a JSON (evita problemas CORS)
+    data = JSON.parse(text);
+
     render();
   } catch (error) {
     document.getElementById("app").innerHTML = "Error cargando datos";
@@ -43,7 +47,7 @@ function render() {
     div.innerHTML = `
       <h3>${collar.NOMBRE}</h3>
       <p><b>Referencia:</b> ${collar.REFERENCIA}</p>
-      <p><b>Categoría:</b> ${collar.CATEGORIA}</p>
+      <p><b>Categoría:</b> ${collar.CATEGORIA || "-"}</p>
       <p><b>Precio:</b> ${collar.PRECIO}</p>
       <p><b>Stock:</b> ${stock}</p>
       <button onclick="vender('${collar.REFERENCIA}')">Vendido</button>
