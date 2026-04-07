@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Collares App</title>
+  <style>
+    body { font-family: Arial; }
+    .card { border:1px solid #ccc; padding:10px; margin:10px; }
+    img { width:100px; }
+    button { padding:10px; margin-top:5px; }
+  </style>
+</head>
+<body>
+
+<h1>Mis Collares</h1>
+<div id="app"></div>
+
+<script>
+const data = [
+  {id:1, nombre:"Collar Luna", stock:5, vendidos:0},
+  {id:2, nombre:"Collar Estrella", stock:3, vendidos:0}
+];
+
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  data.forEach(collar => {
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <h3>${collar.nombre}</h3>
+      <p>Stock: ${collar.stock}</p>
+      <p>Vendidos hoy: ${collar.vendidos}</p>
+      <button onclick="vender(${collar.id})">Vendido</button>
+    `;
+
+    app.appendChild(div);
+  });
+}
+
+function vender(id){
+  const collar = data.find(c => c.id === id);
+  collar.stock--;
+  collar.vendidos++;
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
