@@ -19,22 +19,30 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzGDX4gI1UCyAFw-QjkeVyH
 
 let data = [];
 
-// Función que recibirá los datos
-function recibirDatos(json) {
+// 🔥 IMPORTANTE: función global para JSONP
+window.recibirDatos = function(json) {
   data = json;
   render();
-}
+};
 
-// Cargar datos usando script (evita CORS)
+// 🔥 Cargar datos
 function cargarDatos() {
   const script = document.createElement("script");
-  script.src = API_URL + "?callback=recibirDatos";
+  script.src = API_URL + "?callback=recibirDatos&t=" + new Date().getTime();
+  script.onerror = () => {
+    document.getElementById("app").innerHTML = "Error cargando datos";
+  };
   document.body.appendChild(script);
 }
 
 function render() {
   const app = document.getElementById("app");
   app.innerHTML = "";
+
+  if (!data || data.length === 0) {
+    app.innerHTML = "No hay collares";
+    return;
+  }
 
   data.forEach(collar => {
     const stock = parseInt(collar.STOCK);
@@ -83,7 +91,7 @@ async function vender(ref){
   }
 }
 
-// Ejecutar
+// 🚀 iniciar
 cargarDatos();
 </script>
 
