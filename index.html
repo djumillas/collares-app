@@ -54,7 +54,6 @@ button {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// 🔥 TU CONFIG YA PUESTA
 const firebaseConfig = {
   apiKey: "AIzaSyA5VFJFMHRwK-sWj5Jr2GXo9P4RRd0U8Us",
   authDomain: "collares-2709c.firebaseapp.com",
@@ -69,13 +68,25 @@ const db = getFirestore(appFirebase);
 
 let data = [];
 
+/* 🔥 CONVERTIR DRIVE AUTOMÁTICO */
+function convertirDrive(url){
+  if(!url) return "";
+  const match = url.match(/\/d\/(.*?)\//);
+  if(match){
+    return "https://drive.google.com/uc?export=view&id=" + match[1];
+  }
+  return url;
+}
+
 /* cargar datos */
 async function cargarDatos() {
   const querySnapshot = await getDocs(collection(db, "collares"));
   data = [];
 
   querySnapshot.forEach((docu) => {
-    data.push({ id: docu.id, ...docu.data() });
+    const item = docu.data();
+    item.imagen = convertirDrive(item.imagen);
+    data.push({ id: docu.id, ...item });
   });
 
   render();
