@@ -1,36 +1,88 @@
-function doGet() {
-  const sheet = SpreadsheetApp.openById("13hA8AUqEZvpRfx41umWaSIZCq-WN1VN3z6Cnpq8W9nU");
-  const data = sheet.getSheets()[0].getDataRange().getValues();
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Collares App</title>
+  <style>
+    body { font-family: Arial; padding: 10px; }
+    .card { border:1px solid #ccc; padding:10px; margin:10px; border-radius:10px; }
+    button { padding:10px; margin-top:5px; width:100%; }
+  </style>
+</head>
+<body>
 
-  const headers = data[0];
-  const rows = data.slice(1);
+<h1>Mis Collares</h1>
+<div id="app">Cargando...</div>
 
-  const result = rows.map(row => {
-    let obj = {};
-    headers.forEach((h, i) => obj[h] = row[i]);
-    return obj;
-  });
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxnH4j-kifkU9zxYznxTmEQ8q8rwczTPWgWqmqVE74gZ0Lx-X3bR0084h0gnWJsb0WE6A/exec";
 
-  return ContentService.createTextOutput(JSON.stringify(result))
-    .setMimeType(ContentService.MimeType.JSON);
+let data = [];
+
+async function cargarDatos() {
+  try {
+    const res = await fetch(API_URL);
+    data = await res.json();
+    render();
+  } catch (error) {
+    document.getElementById("app").innerHTML = "Error cargando datos";
+    console.error(error);
+  }
 }
 
-function doPost(e) {
-  const sheet = SpreadsheetApp.openById("13hA8AUqEZvpRfx41umWaSIZCq-WN1VN3z6Cnpq8W9nU");
-  const hoja = sheet.getSheets()[0];
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
 
-  const body = JSON.parse(e.postData.contents);
-  const data = hoja.getDataRange().getValues();
-  const headers = data[0];
+  data.forEach(collar => {
+    const stock = parseInt(collar.STOCK);
 
-  const idIndex = headers.indexOf("REFERENCIA");
-  const stockIndex = headers.indexOf("STOCK");
+    const div = document.createElement("div");
+    div.className = "card";
 
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][idIndex] == body.id) {
-      hoja.getRange(i+1, stockIndex+1).setValue(body.stock);
-    }
+    div.innerHTML = `
+      <h3>${collar.NOMBRE}</h3>
+      <p><b>Referencia:</b> ${collar.REFERENCIA}</p>
+      <p><b>Categoría:</b> ${collar.CATEGORIA}</p>
+      <p><b>Precio:</b> ${collar.PRECIO}</p>
+      <p><b>Stock:</b> ${stock}</p>
+      <button onclick="vender('${collar.REFERENCIA}')">Vendido</button>
+    `;
+
+    app.appendChild(div);
+  });
+}
+
+async function vender(ref){
+  const collar = data.find(c => c.REFERENCIA == ref);
+
+  let stock = parseInt(collar.STOCK);
+
+  if (isNaN(stock) || stock <= 0) {
+    alert("Sin stock");
+    return;
   }
 
-  return ContentService.createTextOutput("ok");
+  collar.STOCK = stock - 1;
+
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        id: collar.REFERENCIA,
+        stock: collar.STOCK
+      })
+    });
+
+    render();
+  } catch (error) {
+    alert("Error al guardar");
+    console.error(error);
+  }
 }
+
+cargarDatos();
+</script>
+
+</body>
+</html>
