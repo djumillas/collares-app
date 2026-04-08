@@ -73,8 +73,8 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-// 🔥 TU URL NUEVA YA PUESTA
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyIqARRhnCyEYmfkXilVL9oJWbMaFPm0y0L__cqJ28hTQaUQwyqUA1xgFcNb-Lm3r5jhg/exec";
+// 🔥 NUEVA URL CORRECTA
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2otWWxIGfR9PXRGoAvM-5f7hMPleA8DpOHvmf_A3jwmirmxOhTthJrqa9G3uxoCvE1g/exec";
 
 let data = [];
 
@@ -118,12 +118,12 @@ window.vender = async function(id){
     return;
   }
 
-  // 🔥 Firebase
+  // Firebase
   await updateDoc(refDoc, {
     stock: collar.stock - 1
   });
 
-  // 🔥 Google Sheets (CLAVE)
+  // Google Sheets
   await fetch(SCRIPT_URL, {
     method: "POST",
     headers: {
