@@ -49,7 +49,6 @@ button {
   border: none;
   background: linear-gradient(90deg, #6c5ce7, #a29bfe);
   color: white;
-  cursor: pointer;
 }
 </style>
 </head>
@@ -73,7 +72,6 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-// 🔥 NUEVA URL CORRECTA
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2otWWxIGfR9PXRGoAvM-5f7hMPleA8DpOHvmf_A3jwmirmxOhTthJrqa9G3uxoCvE1g/exec";
 
 let data = [];
@@ -104,38 +102,45 @@ async function cargarDatos() {
   render();
 }
 
-window.vender = async function(id){
+/* 🔥 IMPORTANTE: DEFINIR FUERA */
+window.vender = async (id) => {
 
-  const refDoc = doc(db, "collares", id);
-  const snap = await getDoc(refDoc);
+  try {
+    const refDoc = doc(db, "collares", id);
+    const snap = await getDoc(refDoc);
 
-  if (!snap.exists()) return;
+    if (!snap.exists()) return;
 
-  let collar = snap.data();
+    let collar = snap.data();
 
-  if(collar.stock <= 0){
-    alert("Sin stock");
-    return;
+    if(collar.stock <= 0){
+      alert("Sin stock");
+      return;
+    }
+
+    // Firebase
+    await updateDoc(refDoc, {
+      stock: collar.stock - 1
+    });
+
+    // Sheets
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        referencia: collar.referencia
+      })
+    });
+
+    await cargarDatos();
+
+  } catch (error) {
+    console.error("ERROR:", error);
+    alert("Error conexión");
   }
-
-  // Firebase
-  await updateDoc(refDoc, {
-    stock: collar.stock - 1
-  });
-
-  // Google Sheets
-  await fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      referencia: collar.referencia
-    })
-  });
-
-  cargarDatos();
-}
+};
 
 function render() {
   const app = document.getElementById("app");
