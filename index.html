@@ -102,8 +102,7 @@ async function cargarDatos() {
   render();
 }
 
-/* 🔥 IMPORTANTE: DEFINIR FUERA */
-window.vender = async (id) => {
+async function vender(id){
 
   try {
     const refDoc = doc(db, "collares", id);
@@ -118,12 +117,10 @@ window.vender = async (id) => {
       return;
     }
 
-    // Firebase
     await updateDoc(refDoc, {
       stock: collar.stock - 1
     });
 
-    // Sheets
     await fetch(SCRIPT_URL, {
       method: "POST",
       headers: {
@@ -134,13 +131,13 @@ window.vender = async (id) => {
       })
     });
 
-    await cargarDatos();
+    cargarDatos();
 
   } catch (error) {
-    console.error("ERROR:", error);
+    console.error(error);
     alert("Error conexión");
   }
-};
+}
 
 function render() {
   const app = document.getElementById("app");
@@ -159,11 +156,14 @@ function render() {
         <h3>${collar.referencia} - ${collar.nombre}</h3>
         <p>${collar.precio}</p>
         <p>Stock: ${collar.stock}</p>
-        <button onclick="vender('${collar.id}')">
-          Vendido
-        </button>
+        <button>Vendido</button>
       </div>
     `;
+
+    // 🔥 AQUÍ está la clave
+    div.querySelector("button").addEventListener("click", () => {
+      vender(collar.id);
+    });
 
     app.appendChild(div);
   });
