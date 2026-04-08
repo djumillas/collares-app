@@ -87,7 +87,7 @@ const db = getFirestore(appFirebase);
 
 let data = [];
 
-/* convertir drive */
+/* convertir drive (por si aún usas alguno) */
 function convertirDrive(url){
   if(!url) return "";
   const match = url.match(/\/d\/(.*?)\//);
@@ -115,6 +115,11 @@ async function cargarDatos() {
 function render() {
   const app = document.getElementById("app");
   app.innerHTML = "";
+
+  // 🔥 ORDENAR POR REFERENCIA
+  data.sort((a, b) => {
+    return (a.referencia || "").localeCompare(b.referencia || "");
+  });
 
   data.forEach(collar => {
 
