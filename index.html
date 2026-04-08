@@ -71,7 +71,6 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-// 🔥 TU URL FINAL
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwI0qvu5Z2xPABYNvfGzEY0piPv0HX3No92PGEoc_sb_d-2dJJDVVzi0Oj4h7mqLusmYA/exec";
 
 let data = [];
@@ -102,13 +101,14 @@ async function vender(id) {
     return;
   }
 
-  // 🔥 Firebase
+  // Firebase
   await updateDoc(refDoc, {
     stock: collar.stock - 1
   });
 
-  // 🔥 Google Sheets (FUNCIONA SEGURO)
-  fetch(`${SCRIPT_URL}?referencia=${collar.referencia}`);
+  // 🔥 MÉTODO DEFINITIVO (NO FALLA)
+  const img = new Image();
+  img.src = `${SCRIPT_URL}?referencia=${collar.referencia}`;
 
   cargarDatos();
 }
