@@ -16,6 +16,7 @@ body {
 .header {
   text-align: center;
   padding: 15px;
+  font-size: 18px;
 }
 
 #app {
@@ -49,6 +50,10 @@ button {
   color: white;
   font-weight: bold;
 }
+
+button:disabled {
+  background: #555;
+}
 </style>
 </head>
 
@@ -71,7 +76,8 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwI0qvu5Z2xPABYNvfGzEY0piPv0HX3No92PGEoc_sb_d-2dJJDVVzi0Oj4h7mqLusmYA/exec";
+// 🔥 TU URL NUEVA
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzlm7YpG6beSNMQDgpwB58Mr3BsH_4k8CCyNJagejpdFN9SEqwryj7orR_yL6HDrP3Amw/exec";
 
 let data = [];
 
@@ -101,12 +107,12 @@ async function vender(id) {
     return;
   }
 
-  // Firebase
+  // 🔥 Firebase
   await updateDoc(refDoc, {
     stock: collar.stock - 1
   });
 
-  // 🔥 MÉTODO DEFINITIVO (NO FALLA)
+  // 🔥 Google Sheets (NO FALLA)
   const img = new Image();
   img.src = `${SCRIPT_URL}?referencia=${collar.referencia}`;
 
@@ -128,8 +134,8 @@ function render() {
       <img src="${collar.imagen}">
       <div class="card-content">
         <h3>${collar.referencia} - ${collar.nombre}</h3>
-        <p>Stock: ${collar.stock}</p>
-        <button>Vendido</button>
+        <p>${collar.stock > 0 ? "Stock: " + collar.stock : "AGOTADO"}</p>
+        <button ${collar.stock <= 0 ? "disabled" : ""}>Vendido</button>
       </div>
     `;
 
