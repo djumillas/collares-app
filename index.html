@@ -71,7 +71,8 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2otWWxIGfR9PXRGoAvM-5f7hMPleA8DpOHvmf_A3jwmirmxOhTthJrqa9G3uxoCvE1g/exec";
+// 🔥 TU URL FINAL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwI0qvu5Z2xPABYNvfGzEY0piPv0HX3No92PGEoc_sb_d-2dJJDVVzi0Oj4h7mqLusmYA/exec";
 
 let data = [];
 
@@ -101,19 +102,13 @@ async function vender(id) {
     return;
   }
 
-  // 🔥 BAJA EN FIREBASE
+  // 🔥 Firebase
   await updateDoc(refDoc, {
     stock: collar.stock - 1
   });
 
-  // 🔥 BAJA EN GOOGLE SHEETS (SIN BLOQUEO)
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    body: JSON.stringify({
-      referencia: collar.referencia
-    }),
-    mode: "no-cors"
-  });
+  // 🔥 Google Sheets (FUNCIONA SEGURO)
+  fetch(`${SCRIPT_URL}?referencia=${collar.referencia}`);
 
   cargarDatos();
 }
