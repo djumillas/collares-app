@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Collares</title>
 
 <style>
@@ -17,7 +16,6 @@ body {
 .header {
   text-align: center;
   padding: 15px;
-  font-size: 18px;
 }
 
 #app {
@@ -43,12 +41,13 @@ body {
 
 button {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
   margin-top: 6px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+  background: #6c5ce7;
   color: white;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -76,74 +75,54 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2otWWxIGfR9PXRGoAv
 
 let data = [];
 
-function ordenarReferencias(a, b) {
-  const numA = parseInt((a.referencia || "").replace(/\D/g, ""));
-  const numB = parseInt((b.referencia || "").replace(/\D/g, ""));
-  return numA - numB;
-}
-
 async function cargarDatos() {
-  const querySnapshot = await getDocs(collection(db, "collares"));
+  const snapshot = await getDocs(collection(db, "collares"));
   data = [];
 
-  querySnapshot.forEach((docu) => {
-    const item = docu.data();
-
-    data.push({
-      id: docu.id,
-      nombre: item.nombre || "",
-      referencia: item.referencia || "",
-      precio: item.precio || "",
-      stock: item.stock || 0,
-      imagen: item.imagen || ""
-    });
+  snapshot.forEach(docu => {
+    const c = docu.data();
+    data.push({ id: docu.id, ...c });
   });
 
   render();
 }
 
-async function vender(id){
+async function vender(id) {
 
-  try {
-    const refDoc = doc(db, "collares", id);
-    const snap = await getDoc(refDoc);
+  const refDoc = doc(db, "collares", id);
+  const snap = await getDoc(refDoc);
 
-    if (!snap.exists()) return;
+  if (!snap.exists()) return;
 
-    let collar = snap.data();
+  let collar = snap.data();
 
-    if(collar.stock <= 0){
-      alert("Sin stock");
-      return;
-    }
-
-    await updateDoc(refDoc, {
-      stock: collar.stock - 1
-    });
-
-    await fetch(SCRIPT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        referencia: collar.referencia
-      })
-    });
-
-    cargarDatos();
-
-  } catch (error) {
-    console.error(error);
-    alert("Error conexión");
+  if (collar.stock <= 0) {
+    alert("Sin stock");
+    return;
   }
+
+  // 🔥 BAJA EN FIREBASE
+  await updateDoc(refDoc, {
+    stock: collar.stock - 1
+  });
+
+  // 🔥 BAJA EN GOOGLE SHEETS (SIN BLOQUEO)
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      referencia: collar.referencia
+    }),
+    mode: "no-cors"
+  });
+
+  cargarDatos();
 }
 
 function render() {
   const app = document.getElementById("app");
   app.innerHTML = "";
 
-  data.sort(ordenarReferencias);
+  data.sort((a,b)=> (a.referencia||"").localeCompare(b.referencia||""));
 
   data.forEach(collar => {
 
@@ -151,16 +130,14 @@ function render() {
     div.className = "card";
 
     div.innerHTML = `
-      ${collar.imagen ? `<img src="${collar.imagen}">` : ""}
+      <img src="${collar.imagen}">
       <div class="card-content">
         <h3>${collar.referencia} - ${collar.nombre}</h3>
-        <p>${collar.precio}</p>
         <p>Stock: ${collar.stock}</p>
         <button>Vendido</button>
       </div>
     `;
 
-    // 🔥 AQUÍ está la clave
     div.querySelector("button").addEventListener("click", () => {
       vender(collar.id);
     });
