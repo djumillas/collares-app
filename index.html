@@ -87,16 +87,6 @@ const db = getFirestore(appFirebase);
 
 let data = [];
 
-/* convertir drive (por si aún usas alguno) */
-function convertirDrive(url){
-  if(!url) return "";
-  const match = url.match(/\/d\/(.*?)\//);
-  if(match){
-    return "https://drive.google.com/uc?export=view&id=" + match[1];
-  }
-  return url;
-}
-
 /* cargar datos */
 async function cargarDatos() {
   const querySnapshot = await getDocs(collection(db, "collares"));
@@ -104,8 +94,15 @@ async function cargarDatos() {
 
   querySnapshot.forEach((docu) => {
     const item = docu.data();
-    item.imagen = convertirDrive(item.imagen);
-    data.push({ id: docu.id, ...item });
+
+    data.push({
+      id: docu.id,
+      nombre: item.nombre || "",
+      referencia: item.referencia || "",
+      precio: item.precio || "",
+      stock: item.stock || 0,
+      imagen: item.imagen || item.product_image || "" // 🔥 CLAVE
+    });
   });
 
   render();
@@ -129,7 +126,7 @@ function render() {
     div.innerHTML = `
       ${collar.imagen ? `<img src="${collar.imagen}">` : ""}
       <div class="card-content">
-        <h3>${collar.referencia || ""} - ${collar.nombre}</h3>
+        <h3>${collar.referencia} - ${collar.nombre}</h3>
         <p>${collar.precio}</p>
         <button onclick="vender('${collar.id}', ${collar.stock})">
           Vendido (${collar.stock})
