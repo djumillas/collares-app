@@ -42,18 +42,6 @@ body {
   padding: 10px;
 }
 
-.card-content h3 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: bold;
-}
-
-.card-content p {
-  margin: 2px 0;
-  font-size: 13px;
-  color: #aaa;
-}
-
 button {
   width: 100%;
   padding: 8px;
@@ -74,7 +62,7 @@ button {
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA5VFJFMHRwK-sWj5Jr2GXo9P4RRd0U8Us",
@@ -85,73 +73,42 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-let data = [];
+/* 🔥 FUNCIÓN CLAVE (ARREGLA DRIVE) */
+function convertirDrive(url){
+  if(!url) return "";
+
+  const match = url.match(/\/d\/(.*?)\//);
+
+  if(match){
+    return "https://lh3.googleusercontent.com/d/" + match[1];
+  }
+
+  return url;
+}
 
 /* cargar datos */
 async function cargarDatos() {
   const querySnapshot = await getDocs(collection(db, "collares"));
-  data = [];
 
-  querySnapshot.forEach((docu) => {
-    const item = docu.data();
+  let html = "";
 
-    data.push({
-      id: docu.id,
-      nombre: item.nombre || "",
-      referencia: item.referencia || "",
-      precio: item.precio || "",
-      stock: item.stock || 0,
-      imagen: item.imagen || item.product_image || "" // 🔥 CLAVE
-    });
-  });
+  querySnapshot.forEach(docu => {
+    const c = docu.data();
 
-  render();
-}
+    const img = convertirDrive(c.imagen);
 
-/* render */
-function render() {
-  const app = document.getElementById("app");
-  app.innerHTML = "";
-
-  // 🔥 ORDENAR POR REFERENCIA
-  data.sort((a, b) => {
-    return (a.referencia || "").localeCompare(b.referencia || "");
-  });
-
-  data.forEach(collar => {
-
-    const div = document.createElement("div");
-    div.className = "card";
-
-    div.innerHTML = `
-      ${collar.imagen ? `<img src="${collar.imagen}">` : ""}
-      <div class="card-content">
-        <h3>${collar.referencia} - ${collar.nombre}</h3>
-        <p>${collar.precio}</p>
-        <button onclick="vender('${collar.id}', ${collar.stock})">
-          Vendido (${collar.stock})
-        </button>
+    html += `
+      <div class="card">
+        ${img ? `<img src="${img}">` : ""}
+        <div class="card-content">
+          <h3>${c.referencia || ""} - ${c.nombre}</h3>
+          <p>${c.precio}</p>
+        </div>
       </div>
     `;
-
-    app.appendChild(div);
-  });
-}
-
-/* vender */
-window.vender = async function(id, stock){
-  if(stock <= 0){
-    alert("Sin stock");
-    return;
-  }
-
-  const ref = doc(db, "collares", id);
-
-  await updateDoc(ref, {
-    stock: stock - 1
   });
 
-  cargarDatos();
+  document.getElementById("app").innerHTML = html;
 }
 
 cargarDatos();
