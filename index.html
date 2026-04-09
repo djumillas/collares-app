@@ -73,8 +73,8 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-// 🔥 PEGA AQUÍ TU URL DE APPS SCRIPT
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeP848aH0J5ALK7H0HsXCjPAp0iLuCHRB3rxOMokGehZMU7ErfCngRhVWJ56lQvBRRmQ/exec";
+// 🔥 TU URL YA PUESTA
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx8kJAq1OVZ7nYEYBlHO5FwWtgHeJUkGVqlXP0XizbuaJFKiqt9nVeg12dyM41K6aXWAw/exec";
 
 let data = [];
 
@@ -109,11 +109,14 @@ async function vender(id) {
     stock: collar.stock - 1
   });
 
-  // 🔥 Sheets
+  // 🔥 Sheets (FUNCIONA EN MÓVIL)
   const img = new Image();
-  img.src = `${SCRIPT_URL}?referencia=${collar.referencia}`;
+  img.src = `${SCRIPT_URL}?referencia=${collar.referencia}&t=${Date.now()}`;
 
-  cargarDatos();
+  // refrescar
+  setTimeout(() => {
+    cargarDatos();
+  }, 500);
 }
 
 function render() {
