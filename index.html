@@ -16,7 +16,6 @@ body {
 .header {
   text-align: center;
   padding: 15px;
-  font-size: 18px;
 }
 
 #app {
@@ -32,7 +31,7 @@ body {
 
 .card img {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 1/1;
   object-fit: cover;
 }
 
@@ -43,12 +42,10 @@ body {
 button {
   width: 100%;
   padding: 10px;
-  margin-top: 6px;
   border-radius: 10px;
   border: none;
   background: #6c5ce7;
   color: white;
-  font-weight: bold;
 }
 
 button:disabled {
@@ -76,8 +73,8 @@ const firebaseConfig = {
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-// 🔥 TU URL NUEVA
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzY03BZbwl-qc2DCKmBAvSqkONZvgkhCaqYBP2m0zPSugQG9SWcpCF7KpVMgLpzim3S8w/exec";
+// 🔥 PEGA AQUÍ TU URL DE APPS SCRIPT
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeP848aH0J5ALK7H0HsXCjPAp0iLuCHRB3rxOMokGehZMU7ErfCngRhVWJ56lQvBRRmQ/exec";
 
 let data = [];
 
@@ -112,7 +109,7 @@ async function vender(id) {
     stock: collar.stock - 1
   });
 
-  // 🔥 Google Sheets (NO FALLA)
+  // 🔥 Sheets
   const img = new Image();
   img.src = `${SCRIPT_URL}?referencia=${collar.referencia}`;
 
