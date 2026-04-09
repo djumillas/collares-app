@@ -1,3 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collares</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0f0f0f;
+  color: white;
+}
+
+.header {
+  text-align: center;
+  padding: 15px;
+}
+
+#app {
+  padding: 10px;
+}
+
+.card {
+  background: #1c1c1e;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.card img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 10px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #6c5ce7;
+  color: white;
+}
+
+button:disabled {
+  background: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Collares</div>
+<div id="app">Cargando...</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, updateDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA5VFJFMHRwK-sWj5Jr2GXo9P4RRd0U8Us",
+  authDomain: "collares-2709c.firebaseapp.com",
+  projectId: "collares-2709c"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+const db = getFirestore(appFirebase);
+
+// 🔥 TU URL DE APPS SCRIPT
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPpm3CKVO3wzyO2aTQC2mpqBpDvywSBvAd21viJ3EOaKWTnPF0nWlO0mjkE1xt4kqhtg/exec";
+
+let data = [];
+
+async function cargarDatos() {
+  const snapshot = await getDocs(collection(db, "collares"));
+  data = [];
+
+  snapshot.forEach(docu => {
+    const c = docu.data();
+    data.push({ id: docu.id, ...c });
+  });
+
+  render();
+}
+
 async function vender(id) {
 
   const refDoc = doc(db, "collares", id);
@@ -12,24 +104,57 @@ async function vender(id) {
     return;
   }
 
-  // 🔥 1. Firebase
+  // 🔥 Firebase
   await updateDoc(refDoc, {
     stock: collar.stock - 1
   });
 
-  // 🔥 2. Sheets (FIX DEFINITIVO)
+  // 🔥 Sheets (MÉTODO QUE FUNCIONA SIEMPRE)
   const url = `${SCRIPT_URL}?referencia=${encodeURIComponent(collar.referencia)}&t=${Date.now()}`;
 
-  // intento con fetch
   fetch(url, { mode: "no-cors" })
     .catch(() => {
-      // fallback seguro para móviles
       const img = new Image();
       img.src = url;
     });
 
-  // 🔄 refrescar UI
+  // refrescar
   setTimeout(() => {
     cargarDatos();
   }, 600);
 }
+
+function render() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  data.sort((a,b)=> (a.referencia||"").localeCompare(b.referencia||""));
+
+  data.forEach(collar => {
+
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <img src="${collar.imagen}">
+      <div class="card-content">
+        <h3>${collar.referencia} - ${collar.nombre}</h3>
+        <p>${collar.stock > 0 ? "Stock: " + collar.stock : "AGOTADO"}</p>
+        <button ${collar.stock <= 0 ? "disabled" : ""}>Vendido</button>
+      </div>
+    `;
+
+    div.querySelector("button").addEventListener("click", () => {
+      vender(collar.id);
+    });
+
+    app.appendChild(div);
+  });
+}
+
+cargarDatos();
+
+</script>
+
+</body>
+</html>
